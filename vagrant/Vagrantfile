@@ -1,0 +1,24 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+APP_NAME = "rocket-test"
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.hostname = APP_NAME
+  
+  config.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh"
+  config.vm.network "forwarded_port", guest: 80, host: 4000, id: "nginx"
+  config.vm.network "forwarded_port", guest: 3000, host: 3000, id: "meteor"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = APP_NAME
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+  end
+  
+  # Workaround for "stdin: is not a tty" issue
+  config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+  
+  config.vm.provision :shell, path: "bootstrap.sh"
+end
